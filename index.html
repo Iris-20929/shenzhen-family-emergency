@@ -162,7 +162,7 @@
   <section class="view active" id="view-landing">
     <div class="logo">
       <svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" rx="14" fill="#E8734A"/><path d="M32 12 14 22v12c0 11 8 17 18 20 10-3 18-9 18-20V22z" fill="#FBF4E8"/><path d="M32 22v18M23 31h18" stroke="#E8734A" stroke-width="4" stroke-linecap="round"/></svg>
-      深圳市家庭应急科普
+      深小应·家庭应急科普
     </div>
     <h1 class="title">测一测你的<br>家庭应急画像</h1>
     <p class="sub">突发时刻，你的第一反应是「救自己」还是「帮倒忙」？选择你的身份和居住场景，闯过 3 道应急选择题，生成专属于你的家庭应急画像，还能分享给家人朋友一起测。</p>
@@ -187,7 +187,7 @@
   <!-- ===== 视图：选择身份 ===== -->
   <section class="view" id="view-identity">
     <div class="section-t"><h2>选择你的身份</h2><span class="chip">第 1 步</span></div>
-    <p class="sub" style="margin-top:6px">先告诉小安，你在这段城市生活里是「谁」。</p>
+    <p class="sub" style="margin-top:6px">先告诉小应，你在这段城市生活里是「谁」。</p>
     <div class="grid g2" id="identityGrid">
       <button class="pick" data-id="boy" type="button"><span class="ph"><img src="assets/char-boy.jpg" alt="小男孩"></span><div class="nm">小男孩</div></button>
       <button class="pick" data-id="girl" type="button"><span class="ph"><img src="assets/char-girl.jpg" alt="小女孩"></span><div class="nm">小女孩</div></button>
@@ -243,7 +243,7 @@
       <button class="btn" id="btnHome">返回首页</button>
     </div>
     <div class="share-tip">画像已生成 · 扫码即可查看专属你的应急画像与全部解析</div>
-    <div class="footer">深圳市家庭应急科普 · 一键测出你的应急画像</div>
+    <div class="footer">深小应·家庭应急科普 · 一键测出你的应急画像</div>
   </section>
 
 </div>
@@ -253,12 +253,12 @@
 <script>
 /* ============ 数据：身份 ============ */
 const IDENTITIES = [
-  {id:'boy',        label:'小男孩',        title:'小小应急侠', img:'assets/char-boy.jpg',        tip:'作为家里的小男子汉，记得爸爸妈妈的名字和电话，遇到危险先找大人。'},
-  {id:'girl',       label:'小女孩',        title:'机智小队长', img:'assets/char-girl.jpg',       tip:'聪明的小姑娘要记住家庭住址和爸妈电话，遇到情况跟着大人一起撤离。'},
-  {id:'man',        label:'青年男性上班族', title:'职场安全担当', img:'assets/char-man.jpg',        tip:'作为家里的顶梁柱，记得定期检查灭火器、应急包，和家人生日历一样列进清单。'},
-  {id:'woman',      label:'青年女性上班族', title:'细心守护者', img:'assets/char-woman.jpg',      tip:'细心的你把应急包放在全家都知道的位置，并和家人每半年演练一次。'},
-  {id:'elder-male', label:'老龄男性',       title:'老城掌灯人', img:'assets/char-elder-male.jpg',  tip:'长辈请随身携带写有紧急联系人和常备药的卡片，身体不适及时求助。'},
-  {id:'elder-female',label:'老龄女性',      title:'暖心守望者', img:'assets/char-elder-female.jpg',tip:'长辈出门带上联系卡，遇到紧急情况先保护好自己，再向邻里求助。'}
+  {id:'boy',        label:'小男孩',        pname:'小男孩',        title:'小小应急侠', img:'assets/char-boy.jpg',        tip:'作为家里的小男子汉，记得爸爸妈妈的名字和电话，遇到危险先找大人。'},
+  {id:'girl',       label:'小女孩',        pname:'小女孩',        title:'机智小队长', img:'assets/char-girl.jpg',       tip:'聪明的小姑娘要记住家庭住址和爸妈电话，遇到情况跟着大人一起撤离。'},
+  {id:'man',        label:'青年男性上班族', pname:'青年男性上班族', title:'职场安全担当', img:'assets/char-man.jpg',        tip:'作为家里的顶梁柱，记得定期检查灭火器、应急包，和家人生日历一样列进清单。'},
+  {id:'woman',      label:'青年女性上班族', pname:'青年女性上班族', title:'细心守护者', img:'assets/char-woman.jpg',      tip:'细心的你把应急包放在全家都知道的位置，并和家人每半年演练一次。'},
+  {id:'elder-male', label:'老龄男性',       pname:'阿公',          title:'老城掌灯人', img:'assets/char-elder-male.jpg',  tip:'长辈请随身携带写有紧急联系人和常备药的卡片，身体不适及时求助。'},
+  {id:'elder-female',label:'老龄女性',      pname:'阿婆',          title:'暖心守望者', img:'assets/char-elder-female.jpg',tip:'长辈出门带上联系卡，遇到紧急情况先保护好自己，再向邻里求助。'}
 ];
 
 /* ============ 数据：场景 + 题目 ============ */
@@ -466,8 +466,8 @@ function levelOf(score){
 
 function buildResult(){
   const id=state.identity, sc=state.scene, lv=levelOf(state.score);
-  $('resultTitle').textContent = `${id.label}的应急画像`;
-  $('resultSub').textContent = `${id.label} · 住在${sc.name} · 答对 ${state.score} / 3 题`;
+  $('resultTitle').textContent = `${id.pname}的应急画像`;
+  $('resultSub').textContent = `${id.pname} · 住在${sc.name} · 答对 ${state.score} / 3 题`;
   drawPoster(id, sc, lv).then(()=>{});
 }
 
@@ -528,10 +528,10 @@ function drawPoster(id, sc, lv){
     ctx.drawImage(charImg, cx-r, cy-r, r*2, r*2);
     ctx.restore();
 
-    // 身份信息（化名已去除，直接显示角色）
+    // 身份信息（老龄身份用化名阿公/阿婆，其余显示角色）
     ctx.textAlign='center';
     ctx.fillStyle='#3E3326'; ctx.font='900 54px "PingFang SC","Microsoft YaHei",sans-serif';
-    ctx.fillText(id.label, cx, 565);
+    ctx.fillText(id.pname, cx, 565);
     ctx.fillStyle='#7A6A56'; ctx.font='600 28px "PingFang SC","Microsoft YaHei",sans-serif';
     ctx.fillText('深圳家庭应急画像', cx, 615);
 
@@ -599,7 +599,7 @@ function drawPoster(id, sc, lv){
     ctx.fillStyle='#7A6A56'; ctx.font='500 26px "PingFang SC","Microsoft YaHei",sans-serif';
     ctx.fillText('长按保存 · 分享给家人朋友', 300, qrY+96);
     ctx.fillStyle='#B8A88F'; ctx.font='500 22px "PingFang SC","Microsoft YaHei",sans-serif';
-    ctx.fillText('深圳市家庭应急科普', 300, qrY+138);
+    ctx.fillText('深小应·家庭应急科普', 300, qrY+138);
 
     // 底部
     ctx.fillStyle='#B8A88F'; ctx.font='500 22px "PingFang SC","Microsoft YaHei",sans-serif';
