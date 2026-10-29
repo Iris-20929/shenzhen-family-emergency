@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-canvas-width="420" data-canvas-height="900">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#FBF4E8">
+<title>深圳家庭应急画像 · 测一测你的家庭应急指数</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23E8734A'/%3E%3Cpath d='M32 12 14 22v12c0 11 8 17 18 20 10-3 18-9 18-20V22z' fill='%23FBF4E8'/%3E%3Cpath d='M32 22v18M23 31h18' stroke='%23E8734A' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#FBF4E8; --bg2:#F3E6D2; --card:#FFFFFF; --line:#EADCC6;
+    --ink:#3E3326; --ink-soft:#7A6A56;
+    --accent:#E8734A; --accent-deep:#CE5A33; --amber:#F0A858;
+    --teal:#3E8E8A; --danger:#C94F3D; --ok:#2F8F5B;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; margin:0; padding:0}
+  html,body{background:linear-gradient(180deg, #FDF7EA 0%, #FBF4E8 45%, #F5E7CC 100%); color:var(--ink);
+    font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;}
+  button{font-family:inherit; border:none; cursor:pointer; color:inherit}
+  img{display:block; max-width:100%}
+
+  .stage{max-width:520px; margin:0 auto; min-height:100vh; position:relative;
+    padding-bottom:40px;}
+  .deco{position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden;}
+  .deco i{position:absolute; display:block; border-radius:50%; background:rgba(240,168,88,.15);}
+  .deco i:nth-child(1){width:200px;height:200px;top:-70px;left:-70px;}
+  .deco i:nth-child(2){width:150px;height:150px;top:28%;right:-60px;}
+  .deco i:nth-child(3){width:190px;height:190px;bottom:6%;left:-70px;}
+  .deco i:nth-child(4){width:90px;height:90px;top:60%;left:4%;}
+
+  .view{position:relative; z-index:1; display:none; padding:22px 20px 30px;
+    animation:fade .4s ease;}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0; transform:translateY(8px)}to{opacity:1; transform:none}}
+
+  .logo{display:inline-flex; align-items:center; gap:8px; font-size:13px; font-weight:700;
+    color:var(--accent-deep); background:rgba(232,115,74,.12); padding:6px 14px; border-radius:999px; margin-bottom:16px;}
+  .logo svg{width:18px;height:18px}
+
+  h1.title{font-size:30px; line-height:1.25; font-weight:900; letter-spacing:.5px;}
+  .sub{color:var(--ink-soft); margin-top:10px; font-size:15px; line-height:1.7;}
+
+  .btn{display:block; width:100%; padding:15px; border-radius:16px; font-size:17px; font-weight:800;
+    background:var(--accent); color:#fff; box-shadow:0 8px 20px rgba(232,115,74,.35);
+    transition:transform .12s ease, box-shadow .12s ease;}
+  .btn:active{transform:scale(.97)}
+  .btn.ghost{background:var(--card); color:var(--ink); box-shadow:0 2px 0 var(--line);
+    border:2px solid var(--line);}
+
+  .steps{display:flex; align-items:center; justify-content:space-between; gap:6px;
+    margin:22px 0 4px; background:var(--card); border:1px solid var(--line);
+    border-radius:16px; padding:14px;}
+  .steps .s{flex:1; text-align:center; position:relative;}
+  .steps .n{width:30px;height:30px;line-height:30px;margin:0 auto;border-radius:50%;
+    background:var(--bg2); color:var(--ink-soft); font-weight:800; font-size:14px;}
+  .steps .s.done .n{background:var(--teal); color:#fff;}
+  .steps .s.now .n{background:var(--accent); color:#fff;}
+  .steps .l{font-size:12px; color:var(--ink-soft); margin-top:6px; font-weight:600;}
+  .steps .s.now .l{color:var(--accent-deep)}
+
+  .grid{display:grid; gap:14px; margin-top:18px;}
+  .g2{grid-template-columns:repeat(2,1fr);}
+  .pick{position:relative; background:var(--card); border:2px solid var(--line); border-radius:18px;
+    overflow:hidden; text-align:center; padding:0 0 12px; transition:border-color .15s, transform .12s;}
+  .pick:active{transform:scale(.98)}
+  .pick .ph{aspect-ratio:1/1; overflow:hidden; background:var(--bg2);}
+  .pick .ph img{width:100%; height:100%; object-fit:cover;}
+  .pick .nm{font-size:16px; font-weight:800; margin-top:10px;}
+  .pick .lb{font-size:12.5px; color:var(--ink-soft); margin-top:2px;}
+  .pick.sel{border-color:var(--accent); box-shadow:0 8px 22px rgba(232,115,74,.22);}
+  .pick.sel::after{content:"✓"; position:absolute; top:8px; right:8px; width:26px; height:26px;
+    line-height:26px; text-align:center; border-radius:50%; background:var(--accent); color:#fff;
+    font-weight:900; font-size:15px; box-shadow:0 3px 8px rgba(0,0,0,.18);}
+
+  .scene .ph{aspect-ratio:16/10;}
+  .hint{font-size:13px; color:var(--ink-soft); margin-top:14px; text-align:center;}
+
+  .section-t{display:flex; align-items:center; gap:10px; margin-bottom:4px;}
+  .section-t h2{font-size:24px; font-weight:900;}
+  .section-t .chip{font-size:12px; background:var(--teal); color:#fff; padding:3px 10px; border-radius:999px;}
+
+  .progress{display:flex; align-items:center; gap:12px; margin:8px 0 18px;}
+  .bar{flex:1; height:9px; background:var(--bg2); border-radius:99px; overflow:hidden;}
+  .bar i{display:block; height:100%; background:var(--accent); border-radius:99px; transition:width .3s;}
+  .qcount{font-size:13px; color:var(--ink-soft); font-weight:700;}
+
+  .qcard{background:rgba(255,255,255,.5); -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px);
+    border:1px solid rgba(234,220,198,.95); border-radius:20px; padding:20px 18px;
+    box-shadow:0 6px 22px rgba(62,51,38,.08);}
+  /* 答题页：顶部完整横图（所选场景），线性渐变融入纯色背景 */
+  #view-quiz{position:relative;}
+  .quiz-bg{position:absolute; top:-22px; left:-20px; right:-20px; height:clamp(210px,32vh,300px); z-index:0;
+    background-size:cover; background-position:center; background-repeat:no-repeat;}
+  .quiz-bg::after{content:""; position:absolute; left:0; right:0; bottom:0; height:120px;
+    background:linear-gradient(180deg, rgba(253,247,234,0) 0%, rgba(253,247,234,.85) 60%, #FDF7EA 100%);}
+  #view-quiz{padding-top:calc(clamp(210px,32vh,300px) + 18px);}
+  #view-quiz .section-t,#view-quiz .progress,#view-quiz .qcard{position:relative; z-index:1;}
+  .qtag{display:inline-block; font-size:12px; font-weight:800; color:var(--accent-deep);
+    background:rgba(232,115,74,.12); padding:4px 10px; border-radius:999px; margin-bottom:12px;}
+  .qtext{font-size:17px; font-weight:800; line-height:1.6;}
+  .opts{margin-top:16px; display:grid; gap:11px;}
+  .opt{display:flex; align-items:flex-start; gap:11px; text-align:left; width:100%;
+    background:rgba(255,255,255,.6); border:2px solid rgba(234,220,198,.95); border-radius:14px; padding:13px 14px;
+    font-size:15px; line-height:1.55; -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px);
+    transition:border-color .15s, transform .12s;}
+  .opt:active{transform:scale(.99)}
+  .opt .k{flex:none; width:24px; height:24px; border-radius:50%; background:rgba(243,230,210,.9); color:var(--ink-soft);
+    font-weight:900; font-size:13px; display:flex; align-items:center; justify-content:center; margin-top:1px;}
+  .opt.correct{border-color:var(--ok); background:rgba(241,250,243,.85);}
+  .opt.correct .k{background:var(--ok); color:#fff;}
+  .opt.wrong{border-color:var(--danger); background:rgba(251,241,239,.85);}
+  .opt.wrong .k{background:var(--danger); color:#fff;}
+  .opt.disabled{pointer-events:none;}
+
+  .fb{margin-top:16px; border-radius:16px; padding:16px; display:none;}
+  .fb.show{display:block; animation:fade .3s ease;}
+  .fb.ok{background:rgba(241,250,243,.92); border:1px solid #CBE6D4;}
+  .fb.bad{background:rgba(251,241,239,.92); border:1px solid #F0D0C9;}
+  .fb .ft{font-weight:900; font-size:16px; display:flex; align-items:center; gap:7px;}
+  .fb.ok .ft{color:var(--ok)} .fb.bad .ft{color:var(--danger)}
+  .fb .fa{font-size:14px; color:var(--ink); line-height:1.65; margin-top:8px;}
+  .fb .fp{margin-top:10px; font-size:13.5px; line-height:1.7; color:var(--ink);
+    background:rgba(255,255,255,.6); border-radius:10px; padding:10px 12px;}
+  .fb .fp b{color:var(--danger);}
+  .fb .next{margin-top:14px; width:100%; padding:12px; border-radius:12px; font-weight:800; font-size:15px;}
+  .fb.ok .next{background:var(--teal); color:#fff;}
+  .fb.bad .next{background:var(--accent); color:#fff;}
+
+  .result-head{text-align:center; margin-bottom:16px;}
+  .result-head h2{font-size:26px; font-weight:900;}
+  .result-head p{color:var(--ink-soft); font-size:14px; margin-top:8px; line-height:1.6;}
+
+  .poster-wrap{position:relative; border-radius:22px; overflow:hidden; box-shadow:0 18px 40px rgba(0,0,0,.14);
+    background:#fff;}
+  .poster-wrap img{width:100%; height:auto; display:block;}
+  .savebar{margin-top:14px; background:rgba(232,115,74,.1); border:1px dashed var(--accent);
+    border-radius:14px; padding:12px; text-align:center; font-size:13.5px; color:var(--accent-deep); line-height:1.6;}
+  .savebar b{font-size:15px;}
+  .result-actions{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px;}
+  .share-tip{text-align:center; color:var(--ink-soft); font-size:13px; margin-top:14px; line-height:1.6;}
+
+  .footer{margin-top:30px; text-align:center; font-size:12px; color:var(--ink-soft); line-height:1.8;}
+  .footer .line{display:inline-block; height:1px; width:40px; background:var(--line); vertical-align:middle; margin:0 8px;}
+
+  .toast{position:fixed; left:50%; bottom:36px; transform:translateX(-50%) translateY(20px);
+    background:rgba(62,51,38,.92); color:#fff; padding:11px 20px; border-radius:12px; font-size:14px;
+    opacity:0; transition:.25s; z-index:60; pointer-events:none; max-width:86%; text-align:center;}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  @media (min-width:560px){
+    .g2{grid-template-columns:repeat(3,1fr);}
+    .stage{padding:26px 20px 50px;}
+  }
+</style>
+</head>
+<body>
+<div class="deco" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+<div class="stage">
+
+  <!-- ===== 视图：首页 ===== -->
+  <section class="view active" id="view-landing">
+    <div class="logo">
+      <svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" rx="14" fill="#E8734A"/><path d="M32 12 14 22v12c0 11 8 17 18 20 10-3 18-9 18-20V22z" fill="#FBF4E8"/><path d="M32 22v18M23 31h18" stroke="#E8734A" stroke-width="4" stroke-linecap="round"/></svg>
+      深圳市家庭应急科普
+    </div>
+    <h1 class="title">测一测你的<br>家庭应急画像</h1>
+    <p class="sub">突发时刻，你的第一反应是「救自己」还是「帮倒忙」？选择你的身份和居住场景，闯过 3 道应急选择题，生成专属于你的家庭应急画像，还能分享给家人朋友一起测。</p>
+
+    <div class="steps">
+      <div class="s now"><div class="n">1</div><div class="l">选身份</div></div>
+      <div class="s"><div class="n">2</div><div class="l">选场景</div></div>
+      <div class="s"><div class="n">3</div><div class="l">应急答题</div></div>
+      <div class="s"><div class="n">4</div><div class="l">生成画像</div></div>
+    </div>
+
+    <button class="btn" id="btnStart" style="margin-top:22px">开始测试</button>
+
+    <div class="footer">
+      <span>3 道题 · 约 1 分钟</span>
+      <span class="line"></span>
+      <span>科学应急 · 人人有责</span>
+    </div>
+    <div class="footer">本页面为应急知识科普互动，不替代专业救援与官方指引。遇险请第一时间拨打 <b>110 / 119 / 120</b>。</div>
+  </section>
+
+  <!-- ===== 视图：选择身份 ===== -->
+  <section class="view" id="view-identity">
+    <div class="section-t"><h2>选择你的身份</h2><span class="chip">第 1 步</span></div>
+    <p class="sub" style="margin-top:6px">先告诉小安，你在这段城市生活里是「谁」。</p>
+    <div class="grid g2" id="identityGrid">
+      <button class="pick" data-id="boy" type="button"><span class="ph"><img src="assets/char-boy.jpg" alt="小男孩"></span><div class="nm">小男孩</div></button>
+      <button class="pick" data-id="girl" type="button"><span class="ph"><img src="assets/char-girl.jpg" alt="小女孩"></span><div class="nm">小女孩</div></button>
+      <button class="pick" data-id="man" type="button"><span class="ph"><img src="assets/char-man.jpg" alt="青年男性上班族"></span><div class="nm">青年男性上班族</div></button>
+      <button class="pick" data-id="woman" type="button"><span class="ph"><img src="assets/char-woman.jpg" alt="青年女性上班族"></span><div class="nm">青年女性上班族</div></button>
+      <button class="pick" data-id="elder-male" type="button"><span class="ph"><img src="assets/char-elder-male.jpg" alt="老龄男性"></span><div class="nm">老龄男性</div></button>
+      <button class="pick" data-id="elder-female" type="button"><span class="ph"><img src="assets/char-elder-female.jpg" alt="老龄女性"></span><div class="nm">老龄女性</div></button>
+    </div>
+    <button class="btn" id="btnIdentityNext" style="margin-top:20px" disabled>下一步</button>
+  </section>
+
+  <!-- ===== 视图：选择场景 ===== -->
+  <section class="view" id="view-scene">
+    <div class="section-t"><h2>你居住在哪里？</h2><span class="chip">第 2 步</span></div>
+    <p class="sub" style="margin-top:6px">不同的居住环境，危险点和应对方式都不一样。</p>
+    <div class="grid" id="sceneGrid">
+      <button class="pick scene" data-id="highrise" type="button"><span class="ph"><img src="assets/scene-highrise.jpg" alt="高空住宅区"></span><div class="nm">高空住宅区</div><div class="lb">住在市区中心的高层住宅小区，二三十层楼，电梯上下。</div></button>
+      <button class="pick scene" data-id="village" type="button"><span class="ph"><img src="assets/scene-village.jpg" alt="城中村老小区"></span><div class="nm">城中村老小区</div><div class="lb">住在城中村的老旧社区，握手楼密集，巷子又窄又深。</div></button>
+      <button class="pick scene" data-id="seaside" type="button"><span class="ph"><img src="assets/scene-seaside.jpg" alt="临海住区"></span><div class="nm">临海住区</div><div class="lb">住在海边的高层住宅小区，推窗见海，紧邻海岸线。</div></button>
+      <button class="pick scene" data-id="dorm" type="button"><span class="ph"><img src="assets/scene-dorm.jpg" alt="配套宿舍区"></span><div class="nm">配套宿舍区</div><div class="lb">住在公司配套的集体宿舍区，成排公寓楼，公共空间多。</div></button>
+    </div>
+    <button class="btn" id="btnSceneNext" style="margin-top:20px" disabled>下一步</button>
+  </section>
+
+  <!-- ===== 视图：应急答题 ===== -->
+  <section class="view" id="view-quiz">
+    <div class="quiz-bg" id="quizBg"></div>
+    <div class="section-t"><h2 id="quizTitle">应急闯关</h2><span class="chip" id="quizSceneChip"></span></div>
+    <div class="progress">
+      <div class="bar"><i id="quizBar" style="width:0%"></i></div>
+      <span class="qcount" id="quizCount">1 / 3</span>
+    </div>
+    <div class="qcard">
+      <span class="qtag" id="quizTag"></span>
+      <div class="qtext" id="quizQ"></div>
+      <div class="opts" id="quizOpts"></div>
+      <div class="fb" id="quizFb"></div>
+    </div>
+  </section>
+
+  <!-- ===== 视图：画像结果 ===== -->
+  <section class="view" id="view-result">
+    <div class="result-head">
+      <h2 id="resultTitle">你的家庭应急画像</h2>
+      <p id="resultSub"></p>
+    </div>
+    <div class="poster-wrap" id="posterWrap">
+      <img id="posterImg" alt="我的家庭应急画像">
+    </div>
+    <div class="savebar"><b>长按上方图片即可保存、转发分享</b><br>让家人朋友也来测一测，全家一起提升应急力</div>
+    <div class="result-actions">
+      <button class="btn ghost" id="btnRetry">重新测试</button>
+      <button class="btn" id="btnHome">返回首页</button>
+    </div>
+    <div class="share-tip">画像已生成 · 扫码即可查看专属你的应急画像与全部解析</div>
+    <div class="footer">深圳市家庭应急科普 · 一键测出你的应急画像</div>
+  </section>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://fastly.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script>
+/* ============ 数据：身份 ============ */
+const IDENTITIES = [
+  {id:'boy',        label:'小男孩',        title:'小小应急侠', img:'assets/char-boy.jpg',        tip:'作为家里的小男子汉，记得爸爸妈妈的名字和电话，遇到危险先找大人。'},
+  {id:'girl',       label:'小女孩',        title:'机智小队长', img:'assets/char-girl.jpg',       tip:'聪明的小姑娘要记住家庭住址和爸妈电话，遇到情况跟着大人一起撤离。'},
+  {id:'man',        label:'青年男性上班族', title:'职场安全担当', img:'assets/char-man.jpg',        tip:'作为家里的顶梁柱，记得定期检查灭火器、应急包，和家人生日历一样列进清单。'},
+  {id:'woman',      label:'青年女性上班族', title:'细心守护者', img:'assets/char-woman.jpg',      tip:'细心的你把应急包放在全家都知道的位置，并和家人每半年演练一次。'},
+  {id:'elder-male', label:'老龄男性',       title:'老城掌灯人', img:'assets/char-elder-male.jpg',  tip:'长辈请随身携带写有紧急联系人和常备药的卡片，身体不适及时求助。'},
+  {id:'elder-female',label:'老龄女性',      title:'暖心守望者', img:'assets/char-elder-female.jpg',tip:'长辈出门带上联系卡，遇到紧急情况先保护好自己，再向邻里求助。'}
+];
+
+/* ============ 数据：场景 + 题目 ============ */
+const SCENES = [
+{
+  id:'highrise', name:'高空住宅区', title:'云端守望员', img:'assets/scene-highrise.jpg', desc:'住在 30 层上下的高层小区，电梯和楼梯是每天的日常。',
+  tip:['在家门口常备应急包（手电、饮用水、应急药品、哨子、湿巾）','熟悉楼内两部疏散楼梯的位置，平时多走楼梯不依赖电梯','牢记「小火快跑、浓烟关门」：火灾不乘电梯，先判断再撤离'],
+  qs:[
+    {q:'台风登陆前，你住在 28 楼，阳台上堆着花盆和杂物。你的第一步应该怎么做？', opts:[
+      {t:'把花盆和杂物搬进屋内，关紧并锁好门窗', ok:true, a:'高层风力远超地面，高空坠物极易砸伤路人、砸坏设施；台风来临前及时收纳阳台物品，是最有效也最关键的一步。'},
+      {t:'打开几扇窗让风对流，保持室内通风', ok:false, a:'台风天开窗会让强风倒灌，可能吹坏门窗、卷起室内物品，反而更危险。', p:'一阵狂风猛地掀开窗扇，客厅的花瓶被吹落摔碎，玻璃碴溅了一地。你慌忙去关窗，手指被夹得生疼，这才后悔开了窗。'},
+      {t:'站到阳台上感受一下风力', ok:false, a:'高空风力极大，人在阳台瞬间就可能失衡，甚至被吹落，极其危险。', p:'你刚站上阳台，一阵猛风差点把你带倒，手机从手中滑落坠向楼下。你在栏杆边惊魂未定，再也不敢靠近。'}
+    ]},
+    {q:'电梯下行到 10 楼时突然停住、门打不开，你被困在电梯里。这时应该怎么做？', opts:[
+      {t:'按紧急呼叫按钮联系物业，保持镇定等待救援', ok:true, a:'电梯困人是常见故障，紧急呼叫按钮能直通物业与维保；保持镇定、不乱动是最安全的做法。'},
+      {t:'用力掰开电梯门，自己爬出去', ok:false, a:'电梯可能停在两层之间，强行扒门极易坠入井道或被夹伤，非常危险。', p:'你使劲掰开电梯门，看到的却是黑洞洞的井道。你吓得赶紧缩回，手心全是汗，再也不敢乱动。'},
+      {t:'在电梯里不断跳跃，希望能引起注意', ok:false, a:'剧烈晃动可能触发急停或让电梯失去平衡，反而把自己置于更危险的境地。', p:'你跳了几下，电梯突然猛地一沉又急停，灯光闪烁。你吓得蹲在角落，再也不敢乱动。'}
+    ]},
+    {q:'深夜楼下住户起火，楼道里开始弥漫浓烟，你住在 22 楼。正确的逃生方式是？', opts:[
+      {t:'用湿毛巾捂口鼻、弯腰低姿沿楼梯快速下楼撤离', ok:true, a:'火灾烟气向上蔓延、有毒且高温，湿毛巾+低姿能减少吸入；走楼梯不乘电梯，是高层逃生的基本原则。'},
+      {t:'乘坐电梯快速下楼', ok:false, a:'火灾时电梯可能断电停运，或成为灌烟的烟囱通道，极易被困或被熏倒。', p:'你按下电梯键，电梯在浓烟中停在半途，门再也打不开。你在电梯里拼命拍打呼救，浓烟正从门缝渗进来。'},
+      {t:'打开窗户，从窗外往下跳或攀爬外墙', ok:false, a:'高层跳楼几乎没有生还可能，攀爬外墙同样极其危险；应走疏散通道或固守待援。', p:'你扒在窗外想攀爬逃生，双手直打滑，幸好被赶到的救援人员一把拉回屋内。'}
+    ]}
+  ]
+},
+{
+  id:'village', name:'城中村老小区', title:'巷弄守夜人', img:'assets/scene-village.jpg', desc:'握手楼挨着握手楼，电线旧、巷子窄，危机常在暗处。',
+  tip:['定期检查更换老化电线、不超负荷用电，尤其注意旧电箱','保持楼道和逃生通道畅通，不在通道堆放杂物','电动车绝不进楼入户、不飞线充电'],
+  qs:[
+    {q:'晚上你闻到焦糊味，发现楼道墙角的老旧电箱在冒火花。这时应该怎么做？', opts:[
+      {t:'立即断电（关总闸）、远离并拨打 119，提醒邻居撤离', ok:true, a:'城中村电线老化极易引发电气火灾；先断电、再报警、远离火点并提醒他人，是最稳妥的处理。'},
+      {t:'端一盆水直接泼向起火的电箱', ok:false, a:'电气火灾不能用水扑救——水导电会导致触电，甚至引发更大短路爆炸。', p:'你一盆水泼下去，「啪」的一声电火花炸开，你被强光吓得后退，幸好躲闪及时没有触电。'},
+      {t:'觉得没事，先回屋继续睡', ok:false, a:'电气火蔓延极快，错过初期扑救窗口，火势会迅速失控。', p:'你回到屋里，几分钟后浓烟弥漫楼道，火势窜上墙面。你被呛醒时，火已近在咫尺。'}
+    ]},
+    {q:'城中村窄巷里某栋楼起火，浓烟顺着巷道向你这边扑来。你要如何撤离？', opts:[
+      {t:'用湿布捂口鼻、弯腰低姿沿墙角往开阔处快速撤离', ok:true, a:'烟往上走且温度高，低姿+捂住口鼻能最大限度减少吸入，往开阔处撤离可避免被围困。'},
+      {t:'逆着烟往楼上跑，觉得高处更安全', ok:false, a:'烟气会迅速充满整栋楼并向上蔓延，往楼上跑只会被困在烟火之中。', p:'你往楼上冲，越往上烟越浓，你被呛得睁不开眼，只能退回墙角报警求助。'},
+      {t:'躲在房间里紧闭门窗，等火烧过来再说', ok:false, a:'城中村老楼耐火等级低，若火势逼近，室内会迅速升温缺氧，应主动撤离而非被动等待。', p:'你关紧门窗躲在屋里，墙壁越来越烫，烟从缝隙渗进来。你终于意识到必须撤离，赶紧破门逃生。'}
+    ]},
+    {q:'暴雨连下数小时，城中村低洼处开始积水。身处其中的你应该怎么做？', opts:[
+      {t:'远离电箱和路灯杆、不涉水，关好门窗待在较高处', ok:true, a:'积水区域极易发生漏电，电箱、路灯下方尤其危险；不涉水、居高位，是最稳妥的安全原则。'},
+      {t:'趟着积水去楼下把电动车推到更安全的地方', ok:false, a:'积水中可能有漏电，盲目涉水非常危险；应等待水退后再处理电动车。', p:'你趟着没过膝盖的积水去推车，脚下一麻——路边电箱正在漏电。幸好你及时撤回，吓得直冒冷汗。'},
+      {t:'到地下车库去避雨，顺便看看情况', ok:false, a:'地下车库是暴雨内涝的重灾区，极易被快速淹没，切勿进入。', p:'你刚下到地下车库，洪水就顺着坡道倒灌进来。你连滚带爬逃出，身后的车库里已灌满了水。'}
+    ]}
+  ]
+},
+{
+  id:'seaside', name:'临海住区', title:'海岸哨兵', img:'assets/scene-seaside.jpg', desc:'推窗见海，海风和海浪近在咫尺，危险也藏在海的那一头。',
+  tip:['台风季密切关注预警，提前收好海边物品、远离海岸线','学习识别离岸流，海边游玩穿救生衣、不去未开放水域','看到海水异常快速退潮，立即向高处撤离、切勿逗留'],
+  qs:[
+    {q:'台风即将登陆，深圳发布台风橙色预警，你住在海边小区。正确的做法是？', opts:[
+      {t:'收好阳台/天台物品、加固门窗，减少外出并远离海岸线', ok:true, a:'台风伴随狂风和风暴潮，沿海地区风险更高；留在家中并远离海边，是最安全的做法。'},
+      {t:'到海边栈道看巨浪、拍几张照片', ok:false, a:'风暴潮会突然上涌，巨浪可瞬间把人卷走，海边在台风天极其危险。', p:'你在栈道上举起手机，一个巨浪猛地拍上岸边。你被海水冲湿滑倒在地，幸好被护栏挡住才没被卷走。'},
+      {t:'站在开放式阳台上吹风看海', ok:false, a:'高层临海阳台在台风中受风力冲击极大，可能被飞物击中或失衡。', p:'你站在阳台想看海，一阵狂风吹得阳台门「哐当」关上，你被沙尘迷了眼，赶紧退回屋内。'}
+    ]},
+    {q:'你在海边散步，看到有人被离岸流卷入海中、正在呼救。你应该怎么做？', opts:[
+      {t:'大声呼救并拨打 110/120，同时抛救生圈、长杆等漂浮物施救，不贸然下水', ok:true, a:'离岸流力量强劲，盲目下水极易造成双人遇难；岸上抛投漂浮物并及时报警，是最安全有效的救援方式。'},
+      {t:'毫不犹豫跳下水去救人', ok:false, a:'离岸流会把施救者也一起卷走，非专业救援人员贸然下水风险极大。', p:'你跳下水想拉他，一股强大的离岸流瞬间把你们俩一起卷离海岸。你拼命挣扎，才被岸上的人合力救起。'},
+      {t:'站在岸上围观，等别人来处理', ok:false, a:'溺水救援的黄金时间极短，第一时间呼救和施救至关重要。', p:'你愣在原地，等反应过来时，人已被浪卷得更远。你后悔没有第一时间呼救。'}
+    ]},
+    {q:'海边玩耍时，你发现海水短时间内异常快速后退，露出了大片海底。这说明可能发生什么？', opts:[
+      {t:'可能是海啸/风暴潮前兆，应立即向高处、远离海岸撤离', ok:true, a:'海水异常快速后退是海啸等危险的前兆信号，必须立即撤离到高处，切勿逗留。'},
+      {t:'退潮了，正好去沙滩捡贝壳', ok:false, a:'把危险前兆当成正常退潮去拾贝，会把人困在低洼处，极易被巨浪卷走。', p:'你跑向露出的海底捡贝壳，突然远处的海水像一堵墙一样涌来。你拔腿就跑，鞋子都跑丢了。'},
+      {t:'待在低洼的海堤边继续玩', ok:false, a:'海啸/风暴潮到来时，低洼地带首当其冲，会瞬间被淹没。', p:'你继续蹲在海堤边，海水突然上涨漫过海堤。你被冲进水中，拼命抓住栏杆才脱险。'}
+    ]}
+  ]
+},
+{
+  id:'dorm', name:'配套宿舍区', title:'楼道安全官', img:'assets/scene-dorm.jpg', desc:'集体宿舍人挨人，充电、做饭、用火用电都要格外小心。',
+  tip:['电动车与充电设备绝不进楼入户、不飞线充电','熟悉宿舍的消防通道和灭火器位置，夜间火警立即撤离','用火用电后及时关闭，闻到燃气先通风断源再报警'],
+  qs:[
+    {q:'深夜你闻到烧焦味，发现楼下电动车充电处正冒出浓烟和火光。应该怎么办？', opts:[
+      {t:'立即切断电源并大声呼救，用灭火器尝试初期扑救；失控则迅速撤离并拨打 119', ok:true, a:'电动车（锂电池）火灾燃烧极快、毒烟大；初期小火可用灭火器扑救，失控时必须尽快撤离并报警。'},
+      {t:'直接端水往起火的锂电池上泼', ok:false, a:'锂电池遇水可能短路爆炸、加剧燃烧，绝不可用水扑救。', p:'你一盆水泼下去，火苗「轰」地窜得更高，还迸出火花。你被热浪逼退，赶紧转身去喊人。'},
+      {t:'先拍视频发到群里，再慢慢处理', ok:false, a:'电动车火灾蔓延以秒计，任何延误都会错失扑救和逃生窗口。', p:'你正低头拍视频，火势已顺着电线窜上楼道，浓烟滚滚。你连滚带爬才跑下楼，手机都顾不上拿。'}
+    ]},
+    {q:'半夜宿舍楼响起刺耳火警，楼道里弥漫着烟味。住在 6 楼的你应该怎么做？', opts:[
+      {t:'用湿毛巾捂口鼻、低姿沿消防通道快速下楼撤离，不乘坐电梯', ok:true, a:'夜间火灾逃生要快而有序：走楼梯、低姿、捂口鼻，能最大程度保障安全。'},
+      {t:'乘坐电梯快速下楼', ok:false, a:'火灾中电梯可能断电困人，也可能成为灌烟通道，务必走楼梯。', p:'你按下电梯，电梯却在半途停电停下，浓烟从门缝涌进来。你在里面吓得直拍对讲机。'},
+      {t:'觉得可能是误报，关好门继续睡', ok:false, a:'火警响起应第一时间查看并撤离，忽略报警可能错过最佳逃生时间。', p:'你以为误报翻了个身，几分钟后烟雾渗进房间。你被呛醒时，楼道已火光冲天。'}
+    ]},
+    {q:'你在宿舍用小燃气灶做饭，闻到一股明显的燃气味。应该怎么做？', opts:[
+      {t:'开窗通风、关闭燃气阀门，不开关任何电器和火源，撤离到室外后拨打燃气公司电话', ok:true, a:'燃气泄漏遇电火花或明火会爆炸；先通风断源、再远离现场报警，是最关键的一步。'},
+      {t:'打开排气扇换气，再开灯查看', ok:false, a:'开关排气扇和灯都会产生电火花，可能瞬间点燃泄漏的燃气，引发爆炸。', p:'你刚按下排气扇开关，「砰」的一声闷响，窗户玻璃被震裂。你被吓得脸色煞白，赶紧逃离现场。'},
+      {t:'用打火机去试燃气管哪里漏气', ok:false, a:'用明火检漏是燃气大忌，会直接引爆泄漏的燃气。', p:'你刚打着打火机凑近，火焰「腾」地窜起来。你慌忙扔开打火机，眉毛都差点被燎到。'}
+    ]}
+  ]
+}
+];
+
+/* ============ 状态 ============ */
+const state = { identity:null, scene:null, qIndex:0, score:0, done:[] };
+
+/* ============ 路由 ============ */
+const $ = id => document.getElementById(id);
+function showView(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  $(id).classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+  renderSteps();
+}
+function renderSteps(){
+  const map = {1:'view-identity',2:'view-scene',3:'view-quiz',4:'view-result'};
+  const cur = Object.entries(map).find(([k,v])=>document.querySelector('#'+v).classList.contains('active'));
+  const idx = cur ? +cur[0] : 1;
+  document.querySelectorAll('.steps .s').forEach((s,i)=>{
+    s.classList.toggle('now', i+1===idx);
+    s.classList.toggle('done', i+1<idx);
+  });
+}
+function toast(msg){
+  const t=$('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+/* ============ 首页 ============ */
+$('btnStart').addEventListener('click', ()=>{
+  if(state.identity) $('identityGrid').querySelectorAll('.pick').forEach(p=>p.classList.remove('sel'));
+  showView('view-identity');
+});
+
+/* ============ 身份选择 ============ */
+function bindIdentity(){
+  const g=$('identityGrid');
+  g.querySelectorAll('.pick').forEach(d=>{
+    const it = IDENTITIES.find(x=>x.id===d.dataset.id);
+    d.addEventListener('click', ()=>{
+      g.querySelectorAll('.pick').forEach(p=>p.classList.remove('sel'));
+      d.classList.add('sel'); state.identity=it; $('btnIdentityNext').disabled=false;
+    });
+  });
+}
+$('btnIdentityNext').addEventListener('click', ()=>{
+  if(!state.identity) return; showView('view-scene');
+});
+
+/* ============ 场景选择 ============ */
+function bindScene(){
+  const g=$('sceneGrid');
+  g.querySelectorAll('.pick').forEach(d=>{
+    const s = SCENES.find(x=>x.id===d.dataset.id);
+    d.addEventListener('click', ()=>{
+      g.querySelectorAll('.pick').forEach(p=>p.classList.remove('sel'));
+      d.classList.add('sel'); state.scene=s; $('btnSceneNext').disabled=false;
+    });
+  });
+}
+$('btnSceneNext').addEventListener('click', ()=>{
+  if(!state.scene) return; startQuiz(); showView('view-quiz');
+});
+
+/* ============ 答题 ============ */
+function startQuiz(){
+  state.qIndex=0; state.score=0; state.done=[];
+  $('quizSceneChip').textContent = state.scene.name;
+  $('quizBg').style.backgroundImage = "url('" + state.scene.img + "')";
+  renderQuestion();
+}
+function renderQuestion(){
+  const s=state.scene, q=s.qs[state.qIndex];
+  $('quizQ').textContent = q.q;
+  $('quizTag').textContent = `情境 ${state.qIndex+1}`;
+  $('quizCount').textContent = `${state.qIndex+1} / ${s.qs.length}`;
+  $('quizBar').style.width = `${(state.qIndex)/s.qs.length*100}%`;
+  const opts=$('quizOpts'); opts.innerHTML='';
+  const fb=$('quizFb'); fb.className='fb'; fb.innerHTML='';
+  q.opts.forEach((o,i)=>{
+    const b=document.createElement('button');
+    b.className='opt'; b.type='button';
+    b.innerHTML=`<span class="k">${String.fromCharCode(65+i)}</span><span>${o.t}</span>`;
+    b.addEventListener('click', ()=>answer(o,b));
+    opts.appendChild(b);
+  });
+}
+function answer(o, btnEl){
+  const opts=btnEl.parentElement; const fb=$('quizFb');
+  opts.querySelectorAll('.opt').forEach(b=>b.classList.add('disabled'));
+  if(o.ok){
+    btnEl.classList.add('correct'); state.score++; state.done.push('ok');
+    fb.className='fb ok show';
+    fb.innerHTML=`<div class="ft">✓ 回答正确</div><div class="fa">${o.a}</div>
+      <button class="next" type="button">${state.qIndex<state.scene.qs.length-1?'下一题':'查看我的画像'}</button>`;
+  }else{
+    btnEl.classList.add('wrong'); state.done.push('bad');
+    fb.className='fb bad show';
+    fb.innerHTML=`<div class="ft">✗ 这一步走错了</div>
+      <div class="fa">${o.a}</div>
+      <div class="fp"><b>如果这样做的剧情走向：</b>${o.p}</div>
+      <button class="next" type="button">${state.qIndex<state.scene.qs.length-1?'知道了，下一题':'查看我的画像'}</button>`;
+  }
+  fb.querySelector('.next').addEventListener('click', ()=>{
+    state.qIndex++;
+    if(state.qIndex < state.scene.qs.length){ renderQuestion(); }
+    else{ buildResult(); showView('view-result'); }
+  });
+}
+
+/* ============ 画像 ============ */
+function levelOf(score){
+  if(score===3) return {lv:'应急卫士',     color:'#2F8F5B', note:'你已具备扎实的家庭应急意识，是家人靠得住的安全担当！', pct:100};
+  if(score===2) return {lv:'靠谱担当',     color:'#3E8E8A', note:'大部分情况下你能冷静应对，再补上几个盲区就更稳了。', pct:80};
+  if(score===1) return {lv:'待强化选手',   color:'#F0A858', note:'你有一些应急常识，但关键时刻容易踩坑，建议重点巩固。', pct:55};
+  return          {lv:'急需恶补',         color:'#C94F3D', note:'面对突发你有些手足无措，别担心，从现在开始学习正当时。', pct:30};
+}
+
+function buildResult(){
+  const id=state.identity, sc=state.scene, lv=levelOf(state.score);
+  $('resultTitle').textContent = `${id.label}的应急画像`;
+  $('resultSub').textContent = `${id.label} · 住在${sc.name} · 答对 ${state.score} / 3 题`;
+  drawPoster(id, sc, lv).then(()=>{});
+}
+
+/* ---------- 画像海报（Canvas 合成） ---------- */
+function loadImg(src){
+  return new Promise((res,rej)=>{ const im=new Image(); im.onload=()=>res(im);
+    im.onerror=()=>rej(src); im.src=src; });
+}
+function wrapText(ctx,text,x,y,maxW,lh){
+  const lines=[]; let cur='';
+  for(const ch of text){ const t=cur+ch; if(ctx.measureText(t).width>maxW && cur){lines.push(cur);cur=ch;}else{cur=t;} }
+  if(cur) lines.push(cur);
+  lines.forEach((l,i)=>{ ctx.fillText(l, x, y+i*lh); });
+  return lines.length;
+}
+
+function drawPoster(id, sc, lv){
+  const W=1080, H=1800;
+  const c=document.createElement('canvas'); c.width=W; c.height=H;
+  const ctx=c.getContext('2d');
+
+  return Promise.all([loadImg(sc.img), loadImg(id.img)]).then(([sceneImg, charImg])=>{
+    // 背景
+    ctx.fillStyle='#FBF4E8'; ctx.fillRect(0,0,W,H);
+
+    // 顶部场景背景：线性渐变自然融入奶油底
+    ctx.save();
+    ctx.beginPath(); ctx.roundRect(40,40,W-80,620,28); ctx.clip();
+    ctx.drawImage(sceneImg, 40,40, W-80, 620);
+    // 顶部压暗（保证白色标题可读）
+    const gTop=ctx.createLinearGradient(0,40,0,230);
+    gTop.addColorStop(0,'rgba(20,16,10,0.4)'); gTop.addColorStop(1,'rgba(20,16,10,0)');
+    ctx.fillStyle=gTop; ctx.fillRect(40,40,W-80,230);
+    // 底部渐变融入背景色（自然衔接，无硬边）
+    const gBot=ctx.createLinearGradient(0,430,0,540);
+    gBot.addColorStop(0,'rgba(251,244,238,0)'); gBot.addColorStop(1,'rgba(251,244,238,1)');
+    ctx.fillStyle=gBot; ctx.fillRect(40,430,W-80,230);
+    ctx.restore();
+
+    // 顶部标签
+    ctx.fillStyle='#E8734A'; ctx.font='800 30px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+    ctx.fillStyle='#ffffff';
+    ctx.font='800 42px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText('深圳家庭应急画像', 88, 130);
+
+    // 场景名
+    ctx.font='600 26px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillStyle='#ffffff';
+    ctx.fillText(`居住场景 · ${sc.name}`, 90, 185);
+
+    // 头像（圆形抠图）
+    const cx=W/2, cy=300, r=118;
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx,cy,r+10,0,Math.PI*2);
+    ctx.fillStyle='#ffffff'; ctx.fill();
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.clip();
+    ctx.drawImage(charImg, cx-r, cy-r, r*2, r*2);
+    ctx.restore();
+
+    // 身份信息（化名已去除，直接显示角色）
+    ctx.textAlign='center';
+    ctx.fillStyle='#3E3326'; ctx.font='900 54px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText(id.label, cx, 565);
+    ctx.fillStyle='#7A6A56'; ctx.font='600 28px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText('深圳家庭应急画像', cx, 615);
+
+    // 应急等级徽章（背景宽度按完整称号自适应）
+    const badgeText = `应急等级 · ${lv.lv}`;
+    const lw = ctx.measureText(badgeText).width + 88;
+    ctx.fillStyle=lv.color;
+    ctx.beginPath(); ctx.roundRect(cx-lw/2, 640, lw, 62, 31); ctx.fill();
+    ctx.fillStyle='#fff'; ctx.font='800 32px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText(badgeText, cx, 681);
+
+    // 专属称号徽章（场景限定，宽度自适应）
+    const st = `专属称号 · ${sc.title}`;
+    const stw = ctx.measureText(st).width + 72;
+    ctx.fillStyle='#FFFFFF';
+    ctx.beginPath(); ctx.roundRect(cx-stw/2, 716, stw, 46, 23); ctx.fill();
+    ctx.strokeStyle='#EADCC6'; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.roundRect(cx-stw/2, 716, stw, 46, 23); ctx.stroke();
+    ctx.fillStyle='#3E3326'; ctx.font='800 26px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText(st, cx, 747);
+
+    // 得分
+    ctx.fillStyle='#3E3326'; ctx.font='800 34px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText(`应急答题：答对 ${state.score} / 3 题`, cx, 800);
+
+    // 分割线
+    ctx.strokeStyle='#EADCC6'; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.moveTo(120,840); ctx.lineTo(W-120,840); ctx.stroke();
+
+    // 画像评语（含身份称号）
+    ctx.fillStyle='#3E3326'; ctx.font='800 34px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign='left'; ctx.fillText(`画像评语 · ${id.title}`, 90, 890);
+    ctx.fillStyle='#5A4C3C'; ctx.font='500 28px "PingFang SC","Microsoft YaHei",sans-serif';
+    const lines=wrapText(ctx, lv.note, 90, 938, W-180, 42);
+
+    // 身份专属建议
+    let y=938+lines*42+40;
+    ctx.fillStyle='#3E3326'; ctx.font='800 34px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText('给你的专属提醒', 90, y);
+    y+=46;
+    ctx.fillStyle='#5A4C3C'; ctx.font='500 28px "PingFang SC","Microsoft YaHei",sans-serif';
+    y+= (wrapText(ctx, id.tip, 90, y, W-180, 42)+1)*42;
+
+    // 场景应急贴士
+    y+=26;
+    ctx.fillStyle='#3E3326'; ctx.font='800 34px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText(`${sc.name} · 家庭应急贴士`, 90, y);
+    y+=48;
+    sc.tip.forEach((t,i)=>{
+      ctx.fillStyle='#E8734A'; ctx.font='800 26px "PingFang SC","Microsoft YaHei",sans-serif';
+      ctx.fillText(`${i+1}.`, 96, y);
+      ctx.fillStyle='#5A4C3C'; ctx.font='500 26px "PingFang SC","Microsoft YaHei",sans-serif';
+      const n=wrapText(ctx, t, 132, y, W-225, 38);
+      y+=n*38+16;
+    });
+
+    // 二维码
+    const qrY=H-330;
+    ctx.strokeStyle='#EADCC6'; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.moveTo(120,qrY-30); ctx.lineTo(W-120,qrY-30); ctx.stroke();
+    drawQR(ctx, 120, qrY, 150);
+    ctx.textAlign='left';
+    ctx.fillStyle='#3E3326'; ctx.font='800 32px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText('扫码测一测你的家庭应急指数', 300, qrY+48);
+    ctx.fillStyle='#7A6A56'; ctx.font='500 26px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText('长按保存 · 分享给家人朋友', 300, qrY+96);
+    ctx.fillStyle='#B8A88F'; ctx.font='500 22px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText('深圳市家庭应急科普', 300, qrY+138);
+
+    // 底部
+    ctx.fillStyle='#B8A88F'; ctx.font='500 22px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign='center';
+    ctx.fillText('遇险请第一时间拨打 110 / 119 / 120', W/2, H-26);
+
+    $('posterImg').src = c.toDataURL('image/png');
+  }).catch(e=>{
+    toast('画像生成失败，请重试');
+  });
+}
+
+function drawQR(ctx, x, y, size){
+  const url = location.href;
+  const host = document.getElementById('qrHost');
+  let canvas=null;
+  try{
+    if(typeof QRCode!=='undefined'){
+      host.innerHTML='';
+      new QRCode(host, {text:url, width:size, height:size, correctLevel:QRCode.CorrectLevel.M});
+      canvas = host.querySelector('canvas');
+    }
+  }catch(e){}
+  if(canvas){
+    ctx.save(); ctx.beginPath(); ctx.roundRect(x-12,y-12,size+24,size+24,18); ctx.clip();
+    ctx.fillStyle='#ffffff'; ctx.fillRect(x-12,y-12,size+24,size+24);
+    ctx.restore();
+    ctx.drawImage(canvas, x, y, size, size);
+  }else{
+    ctx.fillStyle='#ffffff'; ctx.beginPath(); ctx.roundRect(x-12,y-12,size+24,size+24,18); ctx.fill();
+    ctx.fillStyle='#3E3326'; ctx.font='800 26px sans-serif'; ctx.textAlign='center';
+    ctx.fillText('扫码', x+size/2, y+size/2+9);
+  }
+}
+
+/* ============ 结果操作 ============ */
+$('btnRetry').addEventListener('click', ()=>{
+  state.identity=null; state.scene=null; state.qIndex=0; state.score=0; state.done=[];
+  document.querySelectorAll('#identityGrid .pick,#sceneGrid .pick').forEach(p=>p.classList.remove('sel'));
+  $('btnIdentityNext').disabled=true; $('btnSceneNext').disabled=true;
+  showView('view-landing');
+});
+$('btnHome').addEventListener('click', ()=>{ showView('view-landing'); });
+
+/* 长按保存提示（移动端系统已支持） */
+document.addEventListener('contextmenu', e=>{ if(e.target && e.target.id==='posterImg') return; });
+
+/* ============ 初始化 ============ */
+document.body.insertAdjacentHTML('beforeend','<div id="qrHost" style="position:absolute;left:-9999px;top:-9999px"></div>');
+bindIdentity(); bindScene();
+</script>
+</body>
+</html>
