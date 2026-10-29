@@ -29,6 +29,14 @@
   .deco i:nth-child(3){width:190px;height:190px;bottom:6%;left:-70px;}
   .deco i:nth-child(4){width:90px;height:90px;top:60%;left:4%;}
 
+  .bgm-btn{position:fixed; top:14px; right:14px; z-index:60; width:46px; height:46px; border-radius:50%;
+    background:rgba(255,255,255,.85); border:2px solid var(--line); box-shadow:0 4px 14px rgba(0,0,0,.08);
+    display:flex; align-items:center; justify-content:center; color:var(--ink);}
+  .bgm-btn svg{width:24px; height:24px;}
+  .bgm-btn .off{display:none;}
+  .bgm-btn.muted .on{display:none;}
+  .bgm-btn.muted .off{display:block;}
+
   .view{position:relative; z-index:1; display:none; padding:22px 20px 30px;
     animation:fade .4s ease;}
   .view.active{display:block}
@@ -240,12 +248,17 @@
       <button class="btn ghost" id="btnRetry">重新测试</button>
       <button class="btn" id="btnHome">返回首页</button>
     </div>
-    <div class="share-tip">画像已生成 · 扫码即可查看专属你的应急画像与全部解析</div>
+    <div class="share-tip">长按保存画像，分享给家人一起测</div>
     <div class="footer">深小应·家庭应急科普 · 一键测出你的应急画像</div>
   </section>
 
 </div>
 <div class="toast" id="toast"></div>
+<audio id="bgm" src="assets/bgm.mp3" loop preload="auto"></audio>
+<button class="bgm-btn" id="bgmBtn" type="button" aria-label="背景音乐开关" aria-pressed="false">
+  <svg class="on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>
+  <svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+</button>
 
 <script src="https://fastly.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
@@ -644,6 +657,19 @@ $('btnHome').addEventListener('click', ()=>{ showView('view-landing'); });
 
 /* 长按保存提示（移动端系统已支持） */
 document.addEventListener('contextmenu', e=>{ if(e.target && e.target.id==='posterImg') return; });
+
+/* ============ 背景音乐 ============ */
+const bgm = $('bgm'), bgmBtn = $('bgmBtn');
+let bgmStarted = false;
+function bgmPlay(){
+  bgm.play().then(()=>{ bgmStarted = true; bgmBtn.classList.remove('muted'); bgmBtn.setAttribute('aria-pressed','true'); })
+            .catch(()=>{});
+}
+bgmBtn.addEventListener('click', ()=>{
+  if(!bgmStarted){ bgmPlay(); return; }
+  if(bgm.paused){ bgmPlay(); } else { bgm.pause(); bgmBtn.classList.add('muted'); bgmBtn.setAttribute('aria-pressed','false'); }
+});
+document.addEventListener('click', function first(){ if(!bgmStarted) bgmPlay(); }, {once:true});
 
 /* ============ 初始化 ============ */
 document.body.insertAdjacentHTML('beforeend','<div id="qrHost" style="position:absolute;left:-9999px;top:-9999px"></div>');
