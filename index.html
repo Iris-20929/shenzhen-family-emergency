@@ -62,12 +62,10 @@
   .grid{display:grid; gap:14px; margin-top:18px;}
   .g2{grid-template-columns:repeat(2,1fr);}
   .pick{position:relative; background:var(--card); border:2px solid var(--line); border-radius:18px;
-    overflow:hidden; text-align:center; padding:0 0 12px; transition:border-color .15s, transform .12s;}
+    overflow:hidden; text-align:center; padding:0; transition:border-color .15s, transform .12s;}
   .pick:active{transform:scale(.98)}
   .pick .ph{aspect-ratio:1/1; overflow:hidden; background:var(--bg2);}
-  .pick .ph img{width:100%; height:100%; object-fit:cover;}
-  .pick .nm{font-size:16px; font-weight:800; margin-top:10px;}
-  .pick .lb{font-size:12.5px; color:var(--ink-soft); margin-top:2px;}
+  .pick .ph img{width:100%; height:100%; object-fit:cover; display:block;}
   .pick.sel{border-color:var(--accent); box-shadow:0 8px 22px rgba(232,115,74,.22);}
   .pick.sel::after{content:"✓"; position:absolute; top:8px; right:8px; width:26px; height:26px;
     line-height:26px; text-align:center; border-radius:50%; background:var(--accent); color:#fff;
@@ -189,12 +187,12 @@
     <div class="section-t"><h2>选择你的身份</h2><span class="chip">第 1 步</span></div>
     <p class="sub" style="margin-top:6px">先告诉小应，你在这段城市生活里是「谁」。</p>
     <div class="grid g2" id="identityGrid">
-      <button class="pick" data-id="boy" type="button"><span class="ph"><img src="assets/char-boy.jpg" alt="小男孩"></span><div class="nm">小男孩</div></button>
-      <button class="pick" data-id="girl" type="button"><span class="ph"><img src="assets/char-girl.jpg" alt="小女孩"></span><div class="nm">小女孩</div></button>
-      <button class="pick" data-id="man" type="button"><span class="ph"><img src="assets/char-man.jpg" alt="青年男性上班族"></span><div class="nm">青年男性上班族</div></button>
-      <button class="pick" data-id="woman" type="button"><span class="ph"><img src="assets/char-woman.jpg" alt="青年女性上班族"></span><div class="nm">青年女性上班族</div></button>
-      <button class="pick" data-id="elder-male" type="button"><span class="ph"><img src="assets/char-elder-male.jpg" alt="老龄男性"></span><div class="nm">老龄男性</div></button>
-      <button class="pick" data-id="elder-female" type="button"><span class="ph"><img src="assets/char-elder-female.jpg" alt="老龄女性"></span><div class="nm">老龄女性</div></button>
+      <button class="pick" data-id="boy" type="button"><span class="ph"><img src="assets/char-boy.jpg" alt="小男孩"></span></button>
+      <button class="pick" data-id="girl" type="button"><span class="ph"><img src="assets/char-girl.jpg" alt="小女孩"></span></button>
+      <button class="pick" data-id="man" type="button"><span class="ph"><img src="assets/char-man.jpg" alt="青年男性上班族"></span></button>
+      <button class="pick" data-id="woman" type="button"><span class="ph"><img src="assets/char-woman.jpg" alt="青年女性上班族"></span></button>
+      <button class="pick" data-id="elder-male" type="button"><span class="ph"><img src="assets/char-elder-male.jpg" alt="老龄男性"></span></button>
+      <button class="pick" data-id="elder-female" type="button"><span class="ph"><img src="assets/char-elder-female.jpg" alt="老龄女性"></span></button>
     </div>
     <button class="btn" id="btnIdentityNext" style="margin-top:20px" disabled>下一步</button>
   </section>
@@ -204,10 +202,10 @@
     <div class="section-t"><h2>你居住在哪里？</h2><span class="chip">第 2 步</span></div>
     <p class="sub" style="margin-top:6px">不同的居住环境，危险点和应对方式都不一样。</p>
     <div class="grid" id="sceneGrid">
-      <button class="pick scene" data-id="highrise" type="button"><span class="ph"><img src="assets/scene-highrise.jpg" alt="高空住宅区"></span><div class="nm">高空住宅区</div><div class="lb">住在市区中心的高层住宅小区，二三十层楼，电梯上下。</div></button>
-      <button class="pick scene" data-id="village" type="button"><span class="ph"><img src="assets/scene-village.jpg" alt="城中村老小区"></span><div class="nm">城中村老小区</div><div class="lb">住在城中村的老旧社区，握手楼密集，巷子又窄又深。</div></button>
-      <button class="pick scene" data-id="seaside" type="button"><span class="ph"><img src="assets/scene-seaside.jpg" alt="临海住区"></span><div class="nm">临海住区</div><div class="lb">住在海边的高层住宅小区，推窗见海，紧邻海岸线。</div></button>
-      <button class="pick scene" data-id="dorm" type="button"><span class="ph"><img src="assets/scene-dorm.jpg" alt="配套宿舍区"></span><div class="nm">配套宿舍区</div><div class="lb">住在公司配套的集体宿舍区，成排公寓楼，公共空间多。</div></button>
+      <button class="pick scene" data-id="highrise" type="button"><span class="ph"><img src="assets/scene-highrise.jpg" alt="高空住宅区"></span></button>
+      <button class="pick scene" data-id="village" type="button"><span class="ph"><img src="assets/scene-village.jpg" alt="城中村老小区"></span></button>
+      <button class="pick scene" data-id="seaside" type="button"><span class="ph"><img src="assets/scene-seaside.jpg" alt="临海住区"></span></button>
+      <button class="pick scene" data-id="dorm" type="button"><span class="ph"><img src="assets/scene-dorm.jpg" alt="配套宿舍区"></span></button>
     </div>
     <button class="btn" id="btnSceneNext" style="margin-top:20px" disabled>下一步</button>
   </section>
